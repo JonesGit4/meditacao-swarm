@@ -45,12 +45,15 @@ def executar_pipeline(tipo: str) -> bool:
     md_content = md_fn(dados)
     dados["md_content"] = md_content
 
-    # 5. Gerar PDF
+    # 5. Gerar PDF com nome padronizado
     pdf_path = None
     try:
         pdf_gen = gerar_pdf_dominical if tipo == "dominical" else gerar_pdf_diario
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            pdf_path = tmp.name
+        from telegram_sender import _sanitize_filename
+        nome = _sanitize_filename(dados["titulo_liturgico"])
+        partes = data_iso.split("-")
+        data_br = f"{partes[2]}-{partes[1]}-{partes[0]}" if len(partes) == 3 else data_iso
+        pdf_path = f"/tmp/Meditacao_{nome}_{data_br}.pdf"
         pdf_gen(dados, pdf_path)
     except Exception as e:
         logger.error("pdf_fail", error=str(e))
