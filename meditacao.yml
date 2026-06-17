@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  meditacao:
+    image: meditacao-swarm:latest
+    networks:
+      - network_public
+    environment:
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY}"
+      BASEROW_TOKEN: "${BASEROW_TOKEN}"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      TELEGRAM_GROUP_ID: "-1003963644047"
+      TELEGRAM_TOPIC_DIARIO: "4"
+      TELEGRAM_TOPIC_DOMINICAL: "3"
+      TELEGRAM_ADMIN_DM: "8460968432"
+      MATOS_SOARES_BASE: "http://matos-soares"
+      TZ: "America/Sao_Paulo"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == manager1
+      labels:
+        - "traefik.enable=false"
+
+networks:
+  network_public:
+    external: true
