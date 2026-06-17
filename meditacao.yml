@@ -4,6 +4,8 @@ services:
     image: meditacao-swarm:latest
     networks:
       - network_public
+    ports:
+      - "8660:8660"
     environment:
       DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY}"
       BASEROW_TOKEN: "${BASEROW_TOKEN}"
