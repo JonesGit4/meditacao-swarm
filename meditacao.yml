@@ -4,8 +4,6 @@ services:
     image: meditacao-swarm:latest
     networks:
       - network_public
-    ports:
-      - "8660:8660"
     environment:
       DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY}"
       BASEROW_TOKEN: "${BASEROW_TOKEN}"
@@ -22,7 +20,11 @@ services:
         constraints:
           - node.hostname == manager1
       labels:
-        - "traefik.enable=false"
+        - "traefik.enable=true"
+        - "traefik.http.routers.meditacao-health.rule=Host(`meditacao.duobro.com.br`) && PathPrefix(`/health`)"
+        - "traefik.http.routers.meditacao-health.entrypoints=websecure"
+        - "traefik.http.routers.meditacao-health.tls.certresolver=letsencrypt"
+        - "traefik.http.services.meditacao-health.loadbalancer.server.port=8660"
 
 networks:
   network_public:
