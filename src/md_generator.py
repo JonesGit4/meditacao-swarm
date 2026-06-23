@@ -2,6 +2,34 @@
 from datetime import datetime
 
 
+NOMES_INCOMPLETOS = {"os santos mártires", "santos mártires", "os santos"}
+
+
+def _filtrar_santos(santos: list, limite: int = 3) -> list:
+    """Filtra itens malformados da API de santos."""
+    santos_raw = santos[:10]
+    todos_nomes = {s.get("name", "").strip() for s in santos_raw if s.get("name", "").strip()}
+    resultado = []
+    for s in santos_raw:
+        nome = s.get("name", "").strip()
+        desc = s.get("description", "").strip()
+        if not nome:
+            continue
+        if nome.lower() in NOMES_INCOMPLETOS:
+            continue
+        if len(nome) < 5:
+            continue
+        if not desc and any(
+            nome != outro and nome in outro
+            for outro in todos_nomes
+        ):
+            continue
+        resultado.append(s)
+        if len(resultado) >= limite:
+            break
+    return resultado
+
+
 def _cabecalho(dados: dict) -> str:
     data = datetime.fromisoformat(dados["data_iso"])
     data_extenso = data.strftime("%d de %B de %Y")
@@ -14,9 +42,10 @@ def _cabecalho(dados: dict) -> str:
 
 def md_diario(dados: dict) -> str:
     """Gera Markdown para meditação diária (7 seções)."""
+    santos_filtrados = _filtrar_santos(dados.get("santos", []), limite=3)
     santos_str = "\n".join(
         f"- **{s.get('name', '')}**: {s.get('description', '')[:120]}"
-        for s in dados["santos"][:3]
+        for s in santos_filtrados
     )
     md = _cabecalho(dados)
     md += f"## ☩ {dados['titulo_liturgico']}\n"
@@ -45,9 +74,10 @@ def md_diario(dados: dict) -> str:
 
 def md_dominical(dados: dict) -> str:
     """Gera Markdown para meditação dominical (10 seções)."""
+    santos_filtrados = _filtrar_santos(dados.get("santos", []), limite=5)
     santos_str = "\n".join(
         f"- **{s.get('name', '')}**: {s.get('description', '')[:120]}"
-        for s in dados["santos"][:3]
+        for s in santos_filtrados
     )
     clima_str = dados.get("clima", "")
     lua_str = dados.get("lua", "")

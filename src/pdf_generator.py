@@ -45,15 +45,32 @@ def _html_diario(dados: dict) -> str:
         data_fmt = dados.get("data_iso", "")
 
     # Santos — lista com ✦ e nome em negrito
+    # Filtra entradas da API com nome vazio, muito curto ou fragmentado
+    # (ex: "os santos mártires" sem sobrenome, "São João" sem descrição alguma)
+    NOMES_INCOMPLETOS = {"os santos mártires", "santos mártires", "os santos"}
+    santos_raw = dados.get("santos", [])[:10]
+    # Constrói set com TODOS os nomes (com ou sem descrição) para detectar fragmentos
+    todos_nomes = {s.get("name", "").strip() for s in santos_raw if s.get("name", "").strip()}
     santos_items = ""
-    for s in dados.get("santos", [])[:5]:
-        nome = s.get("name", "")
-        desc = s.get("description", "")
-        if nome:
-            santos_items += f'<li><span class="s-nome">{nome}</span>'
-            if desc:
-                santos_items += f' — {desc}'
-            santos_items += '</li>\n'
+    for s in santos_raw[:5]:
+        nome = s.get("name", "").strip()
+        desc = s.get("description", "").strip()
+        if not nome:
+            continue
+        if nome.lower() in NOMES_INCOMPLETOS:
+            continue
+        if len(nome) < 5:
+            continue
+        # Se não tem descrição E é substring de outro nome na lista → pula (fragmento)
+        if not desc and any(
+            nome != outro and nome in outro
+            for outro in todos_nomes
+        ):
+            continue
+        santos_items += f'<li><span class="s-nome">{nome}</span>'
+        if desc:
+            santos_items += f' — {desc}'
+        santos_items += '</li>\n'
 
     santos_html = f"""
 <section>
@@ -366,16 +383,30 @@ def _html_dominical(dados: dict) -> str:
   </table>
 </section>""" if clima_rows else ""
 
-    # Santos
+    # Santos — filtra entradas incompletas ou fragmentadas da API
+    NOMES_INCOMPLETOS = {"os santos mártires", "santos mártires", "os santos"}
+    santos_raw = dados.get("santos", [])[:10]
+    todos_nomes = {s.get("name", "").strip() for s in santos_raw if s.get("name", "").strip()}
     santos_items = ""
-    for s in dados.get("santos", [])[:5]:
-        nome = s.get("name","")
-        desc = s.get("description","")
-        if nome:
-            santos_items += f'<li><span class="s-nome">{nome}</span>'
-            if desc:
-                santos_items += f' — {desc}'
-            santos_items += '</li>\n'
+    for s in santos_raw[:5]:
+        nome = s.get("name", "").strip()
+        desc = s.get("description", "").strip()
+        if not nome:
+            continue
+        if nome.lower() in NOMES_INCOMPLETOS:
+            continue
+        if len(nome) < 5:
+            continue
+        # Se não tem descrição E é substring de outro nome na lista → pula (fragmento)
+        if not desc and any(
+            nome != outro and nome in outro
+            for outro in todos_nomes
+        ):
+            continue
+        santos_items += f'<li><span class="s-nome">{nome}</span>'
+        if desc:
+            santos_items += f' — {desc}'
+        santos_items += '</li>\n'
 
     # Textos bíblicos
     ep_texto = dados.get("epistola_texto","").replace("\n"," ")
@@ -632,7 +663,7 @@ def _html_dominical(dados: dict) -> str:
     <tr><td>&#127774; Lua</td><td>{lua}</td></tr>
     <tr><td>&#127822; Frutas</td><td>{frutas}</td></tr>
     <tr><td>&#127807; Plantio</td><td>{plantio}</td></tr>
-    <tr><td>&#129652; Colheita</td><td>{colheita}</td></tr>
+    <tr><td>&#127806; Colheita</td><td>{colheita}</td></tr>
   </table>
 </section>
 
