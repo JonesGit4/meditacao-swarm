@@ -31,7 +31,7 @@ def _html_diario(dados: dict) -> str:
     """
     cor_chave = dados.get("cor_liturgica", "green")
     cor_hex   = CORES_LITURGICAS.get(cor_chave, "#2E7D32")
-    cor_nome  = NOMES_COR.get(cor_chave, cor_chave.upper())
+    cor_nome  = NOMES_COR.get(cor_chave, "VERDE")
 
     # Formata data ISO → "16 DE JUNHO DE 2026"
     try:
@@ -321,7 +321,7 @@ def _html_dominical(dados: dict) -> str:
     """
     cor_chave = dados.get("cor_liturgica", "green")
     cor_hex   = CORES_LITURGICAS.get(cor_chave, "#2E7D32")
-    cor_nome  = NOMES_COR.get(cor_chave, cor_chave.upper())
+    cor_nome  = NOMES_COR.get(cor_chave, "VERDE")
 
     # Data formatada
     try:
@@ -718,7 +718,11 @@ def _html_dominical(dados: dict) -> str:
 def gerar_pdf_diario(dados: dict, output_path: str) -> str:
     """Gera PDF diário via WeasyPrint."""
     html = _html_diario(dados)
-    HTML(string=html).write_pdf(output_path)
+    try:
+        HTML(string=html).write_pdf(output_path)
+    except Exception as e:
+        logger.error("weasyprint_falhou", erro=str(e), tipo="diario")
+        raise
     logger.info("pdf_diario_gerado", path=output_path)
     return output_path
 
@@ -726,6 +730,10 @@ def gerar_pdf_diario(dados: dict, output_path: str) -> str:
 def gerar_pdf_dominical(dados: dict, output_path: str) -> str:
     """Gera PDF dominical via WeasyPrint."""
     html = _html_dominical(dados)
-    HTML(string=html).write_pdf(output_path)
+    try:
+        HTML(string=html).write_pdf(output_path)
+    except Exception as e:
+        logger.error("weasyprint_falhou", erro=str(e), tipo="dominical")
+        raise
     logger.info("pdf_dominical_gerado", path=output_path)
     return output_path
