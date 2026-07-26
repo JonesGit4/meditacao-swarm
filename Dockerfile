@@ -21,4 +21,9 @@ EXPOSE 8660
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8660/health')"
 
-CMD ["python3", "-u", "src/main.py"]
+
+# Pre-build validation entrypoint
+COPY scripts/prebuild_check.py /app/scripts/prebuild_check.py
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
