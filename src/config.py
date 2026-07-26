@@ -6,7 +6,7 @@ load_dotenv()
 # DeepSeek
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
-DEEPSEEK_MODEL = "deepseek-chat"
+DEEPSEEK_MODEL = "deepseek-v4-pro"  # deepseek-chat depreciado em 25/07/2026
 
 # Baserow
 BASEROW_TOKEN = os.getenv("BASEROW_TOKEN", "")
